@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Free Company Roadmap</title>
+<style>
+  :root{
+    --bg:#0c0f18; --panel:#141926; --panel2:#1b2130; --panel3:#222939;
+    --line:#2b3345; --text:#e8ecf6; --muted:#8792ab;
+    --gold:#d8b06a; --crystal:#7fb6ff; --today:#ff5470; --good:#3ecf8e;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:
+      radial-gradient(1200px 500px at 20% -10%, #1a2340 0%, transparent 60%), var(--bg);
+    color:var(--text);
+    font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+
+  header{padding:14px 20px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;
+    gap:10px;align-items:center;background:linear-gradient(180deg,#161d2e,#121826)}
+  .crest{width:26px;height:26px;flex:none;border-radius:6px;
+    background:linear-gradient(135deg,var(--gold),#8a6a2f);
+    display:grid;place-items:center;color:#1a1408;font-weight:800;font-size:13px}
+  #fcName{background:transparent;border:none;color:var(--gold);font-size:18px;font-weight:700;
+    outline:none;min-width:200px;letter-spacing:.3px;font-family:inherit}
+  #fcName:focus{border-bottom:1px solid var(--gold)}
+  #fcName:disabled{opacity:1}
+  .spacer{flex:1}
+
+  button,select,input[type=date],input[type=text],input[type=password],input[type=number]{
+    background:var(--panel2);color:var(--text);border:1px solid var(--line);
+    border-radius:7px;padding:7px 10px;font-size:13px;font-family:inherit;outline:none}
+  button{cursor:pointer;transition:.15s}
+  button:hover{border-color:var(--crystal);color:#fff}
+  button.primary{background:linear-gradient(180deg,#5f86d8,#4568b8);border-color:#5f86d8;color:#fff;font-weight:600}
+  button.primary:hover{filter:brightness(1.15)}
+  button.gold{background:linear-gradient(180deg,#c9a25c,#9c7a3c);border-color:#c9a25c;color:#20180a;font-weight:700}
+  button.gold:hover{color:#20180a;filter:brightness(1.1)}
+  button.danger:hover{border-color:#ff5470;color:#ff5470}
+
+  .tabs{display:flex;gap:4px;background:var(--panel2);padding:3px;border-radius:9px;border:1px solid var(--line)}
+  .tabs button{background:transparent;border:none;padding:6px 16px;border-radius:7px;color:var(--muted);font-weight:600}
+  .tabs button.on{background:var(--panel3);color:#fff;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+
+  .status{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);
+    background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:5px 11px;white-space:nowrap}
+  .status i{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+  .status.live i{background:var(--good);box-shadow:0 0 7px var(--good)}
+  .status.off  i{background:#ff5470}
+  .status.local i{background:var(--gold)}
+
+  .banner{margin:0;padding:10px 20px;background:#3a2a12;border-bottom:1px solid #5a4420;
+    color:#f0d9a8;font-size:12.5px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .banner code{background:rgba(0,0,0,.35);padding:1px 6px;border-radius:4px;font-size:11.5px}
+
+  .wrap{padding:16px 20px 70px}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+  .toolbar label{font-size:12px;color:var(--muted)}
+  .legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted);margin-bottom:12px}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .dot{width:10px;height:10px;border-radius:3px;display:inline-block;flex:none}
+
+  /* ---------- BOARD ---------- */
+  .board{display:flex;gap:12px;overflow-x:auto;padding-bottom:16px;align-items:flex-start}
+  .col{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    width:280px;min-width:280px;display:flex;flex-direction:column;max-height:74vh}
+  .col.over{border-color:var(--crystal);box-shadow:0 0 0 2px rgba(127,182,255,.2) inset}
+  .colhead{padding:10px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;
+    position:sticky;top:0;background:var(--panel);border-radius:12px 12px 0 0;z-index:2}
+  .colhead .ttl{font-weight:650;font-size:13px;flex:1;display:flex;align-items:center;gap:7px}
+  .count{background:var(--panel3);color:var(--muted);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:700}
+  .cards{padding:10px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1;min-height:60px}
+  .card{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--crystal);
+    border-radius:9px;padding:9px 10px;cursor:pointer;transition:.12s}
+  body.can-edit .card{cursor:grab}
+  .card:hover{background:var(--panel3);border-color:#3d475e}
+  .card.dragging{opacity:.35}
+  .card .cname{font-size:13px;font-weight:550;margin-bottom:6px;line-height:1.35}
+  .card .meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:11px;color:var(--muted)}
+  .chip{background:rgba(255,255,255,.06);border-radius:20px;padding:2px 8px;display:flex;align-items:center;gap:5px}
+  .av{width:16px;height:16px;border-radius:50%;display:grid;place-items:center;
+    font-size:9px;font-weight:800;color:#10141f;flex:none}
+  .pbar{height:4px;background:rgba(255,255,255,.09);border-radius:3px;margin-top:7px;overflow:hidden}
+  .pbar i{display:block;height:100%;border-radius:3px}
+  .addcard{margin:0 10px 10px;background:transparent;border:1px dashed var(--line);color:var(--muted);
+    padding:7px;border-radius:8px;font-size:12px}
+  .addcard:hover{border-color:var(--crystal);color:var(--crystal)}
+
+  /* ---------- GANTT ---------- */
+  .chart{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
+  .scroll{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;min-width:900px}
+  th,td{border-bottom:1px solid var(--line);padding:0}
+  thead th{background:var(--panel2);font-weight:600;font-size:11px;color:var(--muted);
+    text-align:center;padding:8px 4px;white-space:nowrap;position:sticky;top:0;z-index:3}
+  th.namecol,td.namecol{text-align:left;padding:8px 12px;width:290px;min-width:250px;
+    position:sticky;left:0;background:var(--panel);z-index:2;border-right:1px solid var(--line)}
+  thead th.namecol{background:var(--panel2);z-index:4}
+  tr.grouprow td{background:var(--panel2);font-weight:650;font-size:12px;letter-spacing:.4px;text-transform:uppercase}
+  td.gridcell{position:relative;height:38px}
+  .tname{font-size:13px;display:flex;align-items:center;gap:8px}
+  .rowtools{display:flex;gap:4px;opacity:0;transition:.15s}
+  tr:hover .rowtools{opacity:1}
+  .rowtools button{padding:2px 6px;font-size:11px;border-radius:5px}
+  .bar{position:absolute;top:9px;height:20px;border-radius:5px;display:flex;align-items:center;
+    padding:0 7px;font-size:11px;color:#fff;white-space:nowrap;overflow:hidden;cursor:pointer;
+    box-shadow:0 1px 3px rgba(0,0,0,.45)}
+  .bar .fill{position:absolute;left:0;top:0;bottom:0;background:rgba(255,255,255,.3);border-radius:5px 0 0 5px}
+  .bar span{position:relative;z-index:1;text-shadow:0 1px 2px rgba(0,0,0,.55)}
+  .milestone{position:absolute;top:10px;width:18px;height:18px;transform:rotate(45deg);
+    border-radius:3px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+  .todayline{position:absolute;top:0;bottom:0;width:2px;background:var(--today);z-index:1;opacity:.8}
+
+  /* ---------- ROSTER ---------- */
+  .roster{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .mchip{display:flex;align-items:center;gap:7px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:20px;padding:4px 10px 4px 5px;font-size:12px}
+  .mchip .av{width:20px;height:20px;font-size:10px}
+  .mchip button{background:none;border:none;color:var(--muted);padding:0 2px;font-size:14px;line-height:1}
+  .mchip button:hover{color:#ff5470;border-color:transparent}
+
+  dialog{border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--text);
+    padding:0;width:min(480px,92vw)}
+  dialog::backdrop{background:rgba(0,0,0,.68)}
+  .dlg{padding:18px 20px}
+  .dlg h3{margin:0 0 14px;font-size:16px;color:var(--gold)}
+  .dlg p{margin:0 0 14px;font-size:12.5px;color:var(--muted);line-height:1.6}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+  .field input,.field select{width:100%}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .dlgfoot{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+  input[type=range]{width:100%}
+  .err{color:#ff8a8a;font-size:12px;min-height:16px;margin-top:-6px}
+  .hint{font-size:12px;color:var(--muted);margin-top:16px;line-height:1.7}
+  .empty{padding:34px;text-align:center;color:var(--muted);font-size:13px}
+
+  body:not(.can-edit) .edit-only{display:none !important}
+  @media print{ header,.toolbar,.rowtools,.hint,.addcard,.banner{display:none} body{background:#fff;color:#000} }
+</style>
+</head>
+<body>
+
+<div class="banner" id="setupBanner" style="display:none">
+  <b>Not connected.</b>
+  <span>Paste your Firebase config into <code>FIREBASE_CONFIG</code> near the top of this file's script to turn on live sync. Until then changes are saved only in this browser.</span>
+</div>
+
+<header>
+  <div class="crest">FC</div>
+  <input id="fcName" value="Free Company Roadmap">
+  <div class="tabs">
+    <button id="tabBoard" class="on">Board</button>
+    <button id="tabGantt">Timeline</button>
+  </div>
+  <div class="spacer"></div>
+  <div class="status" id="conn"><i></i><span>connecting…</span></div>
+  <button class="primary edit-only" id="addBtn">+ Task</button>
+  <button class="gold edit-only" id="memBtn">+ Member</button>
+  <button id="exportBtn">Export</button>
+  <button class="edit-only" id="importBtn">Import</button>
+  <button id="printBtn">Print</button>
+  <button id="lockBtn">Officer login</button>
+  <input type="file" id="fileIn" accept=".json" hidden>
+</header>
+
+<div class="wrap">
+
+  <div class="toolbar" id="boardBar">
+    <label>Group columns by</label>
+    <select id="groupBy">
+      <option value="status">Status</option>
+      <option value="owner">Member</option>
+      <option value="cat">Category</option>
+    </select>
+    <label style="margin-left:10px">Member</label>
+    <select id="filtOwner"></select>
+    <label style="margin-left:10px">Category</label>
+    <select id="filtCat"></select>
+  </div>
+
+  <div class="toolbar" id="ganttBar" style="display:none">
+    <label>Zoom</label>
+    <select id="zoom">
+      <option value="day">Day</option><option value="week" selected>Week</option><option value="month">Month</option>
+    </select>
+    <label style="margin-left:10px">Rows grouped by</label>
+    <select id="ganttGroup"><option value="cat">Category</option><option value="owner">Member</option></select>
+  </div>
+
+  <div class="roster" id="roster"></div>
+  <div class="legend" id="legend"></div>
+
+  <div id="viewBoard"><div class="board" id="board"></div></div>
+  <div id="viewGantt" style="display:none"><div class="chart"><div class="scroll" id="chart"></div></div></div>
+
+  <div class="hint" id="hint"></div>
+</div>
+
+<dialog id="dlg"><form method="dialog" class="dlg">
+  <h3 id="dlgTitle">Task</h3>
+  <div class="field"><label>Task</label><input id="fName" type="text" required placeholder="e.g. Clear M4S"></div>
+  <div class="row2">
+    <div class="field"><label>Category</label><select id="fCat"></select></div>
+    <div class="field"><label>Assigned to</label><select id="fOwner"></select></div>
+  </div>
+  <div class="row2">
+    <div class="field"><label>Status</label><select id="fStatus"></select></div>
+    <div class="field"><label>Progress: <b id="pctLbl">0%</b></label>
+      <input id="fPct" type="range" min="0" max="100" step="5" value="0"></div>
+  </div>
+  <div class="row2">
+    <div class="field"><label>Start</label><input id="fStart" type="date" required></div>
+    <div class="field"><label>End / due</label><input id="fEnd" type="date" required></div>
+  </div>
+  <div class="field"><label><input type="checkbox" id="fMile" style="width:auto"> Milestone (single day)</label></div>
+  <div class="dlgfoot">
+    <button type="button" class="danger" id="delBtn">Delete</button>
+    <button type="button" id="cancelBtn">Cancel</button>
+    <button type="button" class="primary" id="saveBtn">Save</button>
+  </div>
+</form></dialog>
+
+<dialog id="mdlg"><form method="dialog" class="dlg">
+  <h3>Add FC member</h3>
+  <div class="field"><label>Name / handle — no real names needed</label>
+    <input id="mName" type="text" required placeholder="e.g. Nova Lightfang"></div>
+  <div class="field"><label>Role (optional)</label>
+    <select id="mRole">
+      <option value="">—</option><option>Tank</option><option>Healer</option>
+      <option>Melee DPS</option><option>Ranged DPS</option><option>Caster</option>
+      <option>Crafter</option><option>Gatherer</option><option>Officer</option>
+    </select></div>
+  <div class="dlgfoot">
+    <button type="button" id="mCancel">Cancel</button>
+    <button type="button" class="primary" id="mSave">Add</button>
+  </div>
+</form></dialog>
+
+<dialog id="pdlg"><form method="dialog" class="dlg">
+  <h3>Officer login</h3>
+  <p>Enter the officer password to unlock editing. Everyone else can view the board without one.</p>
+  <div class="field"><label>Officer password</label><input id="pPass" type="password" autocomplete="off"></div>
+  <div class="err" id="pErr"></div>
+  <div class="dlgfoot">
+    <button type="button" id="pCancel">Cancel</button>
+    <button type="button" class="primary" id="pOk">Unlock</button>
+  </div>
+</form></dialog>
+
+<dialog id="sdlg"><form method="dialog" class="dlg">
+  <h3>Board is empty</h3>
+  <p>Nothing has been saved to this board yet. Start from a sample FFXIV Free Company roadmap you can edit, or start with a blank board.</p>
+  <div class="dlgfoot">
+    <button type="button" id="sBlank">Start blank</button>
+    <button type="button" class="primary" id="sSample">Load sample tasks</button>
+  </div>
+</form></dialog>
+
+<script type="module">
+/* ============================================================
+   ①  FIREBASE CONFIG
+   These values are public identifiers, not secrets. Access is
+   controlled by the Realtime Database rules — see SETUP.md.
+   ============================================================ */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCwiZozuaNNM92aJYtZDelBQkXM00VHr8g",
+  authDomain: "fc-roadmap.firebaseapp.com",
+  databaseURL: "https://fc-roadmap-default-rtdb.firebaseio.com",
+  projectId: "fc-roadmap",
+  storageBucket: "fc-roadmap.firebasestorage.app",
+  messagingSenderId: "587932553299",
+  appId: "1:587932553299:web:1f688bacaf513f07a976a6",
+  measurementId: "G-WPDGLXESW8"
+};
+
+/*  ②  Which board this page shows. Change it if you ever want a
+    second, separate board in the same Firebase project.        */
+const BOARD_ID = "main";
+
+/* ============================================================ */
+
+const CATS = [
+  {id:"prog",    name:"Raid Progression",     color:"#ff5470"},
+  {id:"content", name:"Content & Roulettes",  color:"#6c8cff"},
+  {id:"craft",   name:"Crafting & Gathering", color:"#3ecf8e"},
+  {id:"work",    name:"Workshop & Airships",  color:"#ffb84d"},
+  {id:"house",   name:"Housing & Decor",      color:"#c86cff"},
+  {id:"event",   name:"FC Events",            color:"#4dd0e1"},
+  {id:"admin",   name:"Recruitment & Admin",  color:"#ff8a5b"}
+];
+const STATUSES = [
+  {id:"backlog", name:"Backlog",     color:"#8792ab"},
+  {id:"ready",   name:"Ready",       color:"#7fb6ff"},
+  {id:"doing",   name:"In Progress", color:"#ffb84d"},
+  {id:"blocked", name:"Blocked",     color:"#ff5470"},
+  {id:"done",    name:"Done",        color:"#3ecf8e"}
+];
+const AVCOLORS = ["#7fb6ff","#3ecf8e","#ffb84d","#c86cff","#ff8a5b","#4dd0e1","#d8b06a","#ff5470","#9ee37d","#f7a8c4"];
+const LKEY = "ffxiv_fc_local_"+BOARD_ID;
+const PKEY = "ffxiv_fc_pass_"+BOARD_ID;
+
+const iso = d => d.toISOString().slice(0,10);
+const today = () => iso(new Date());
+const addDays = (s,n)=>{const d=new Date(s+"T00:00:00");d.setDate(d.getDate()+n);return iso(d);};
+const uid = ()=> (crypto.randomUUID ? crypto.randomUUID() : "id"+Math.random().toString(36).slice(2)+Date.now());
+const esc = s => String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const $ = id => document.getElementById(id);
+
+function sample(){
+  const t = today(); let ci = 0;
+  const M = (name,role)=>({id:uid(),name,role,color:AVCOLORS[ci++ % AVCOLORS.length]});
+  const mem = [M("Nova Lightfang","Tank"),M("Rell Aster","Healer"),
+               M("Kai Windrow","Melee DPS"),M("Sable Vey","Caster"),M("Pip Cobbleton","Crafter")];
+  const T=(name,cat,status,s,len,pct,owner,mile)=>({id:uid(),name,cat,status,
+    start:addDays(t,s),end:addDays(t,s+len),pct,owner:owner||"",mile:!!mile});
+  return {name:"Free Company Roadmap", members:mem, tasks:[
+    T("Static roster locked for tier","prog","done",-21,7,100,mem[0].id),
+    T("Clear M1S–M2S","prog","done",-14,10,100,mem[0].id),
+    T("Clear M3S","prog","doing",-4,14,55,mem[2].id),
+    T("Clear M4S","prog","backlog",12,21,0,""),
+    T("Tier cleared","prog","backlog",34,0,0,"",true),
+    T("Weekly FC roulette night","content","ready",2,1,0,mem[1].id),
+    T("Get everyone through MSQ patch","content","doing",-7,21,40,mem[1].id),
+    T("Extreme trial farm — mounts","content","backlog",8,28,0,mem[3].id),
+    T("Level all crafters to cap","craft","doing",-10,30,35,mem[4].id),
+    T("Stockpile raid food & pots","craft","ready",1,10,0,mem[4].id),
+    T("Melded BiS for static","craft","backlog",14,14,0,mem[4].id),
+    T("Workshop: submersible #3 build","work","doing",-5,18,60,mem[0].id),
+    T("Airship voyage rotation set up","work","ready",3,7,0,""),
+    T("Company chest restock","work","backlog",9,5,0,""),
+    T("FC house re-decorate — main hall","house","doing",-3,21,25,mem[3].id),
+    T("Build FC garden / cross-breed seeds","house","backlog",10,28,0,""),
+    T("Chocobo stable upkeep rota","house","ready",1,14,0,mem[1].id),
+    T("FC movie night","event","ready",5,1,0,mem[3].id),
+    T("Treasure map night","event","ready",4,1,0,mem[2].id),
+    T("Glamour contest","event","backlog",18,3,0,""),
+    T("Anniversary party","event","backlog",40,1,0,"",true),
+    T("Update Discord roles & channels","admin","doing",-2,7,50,mem[0].id),
+    T("Refresh recruitment post","admin","ready",6,3,0,""),
+    T("New member onboarding guide","admin","backlog",11,10,0,mem[1].id),
+    T("FC rank / permissions audit","admin","backlog",20,5,0,"")
+  ]};
+}
+const blank = ()=> ({name:"Free Company Roadmap", members:[], tasks:[]});
+
+let state = blank();
+let canEdit = false;          // officer mode
+let pass = null;              // officer password held in memory + localStorage
+let db=null, boardRef=null, dataRef=null, online=false;
+let suppressRender = false;   // don't repaint mid-drag / mid-dialog
+let pendingRemote = null;
+
+const catOf  = id => CATS.find(c=>c.id===id) || CATS[0];
+const statOf = id => STATUSES.find(s=>s.id===id) || STATUSES[0];
+const memOf  = id => state.members.find(m=>m.id===id) || null;
+const initials = n => String(n).trim().split(/\s+/).map(w=>w[0]).join("").slice(0,2).toUpperCase();
+
+/* ================= persistence ================= */
+function saveLocal(){ try{ localStorage.setItem(LKEY, JSON.stringify(state)); }catch(e){} }
+function loadLocal(){ try{ const r=localStorage.getItem(LKEY); if(r) return JSON.parse(r); }catch(e){} return null; }
+
+let writeTimer=null;
+function pushRemote(){
+  if(!online || !canEdit) return;
+  clearTimeout(writeTimer);
+  writeTimer = setTimeout(async ()=>{
+    try{
+      await fbSet(boardRef, { key: pass ?? "", data: JSON.parse(JSON.stringify(state)),
+                              updated: Date.now() });
+      setConn("live","Live · synced");
+    }catch(err){
+      setConn("off","Write refused");
+      console.warn(err);
+      alert("Couldn't save to the shared board — your officer password may have changed.\n\nEditing has been locked. Log in again to continue.");
+      lockDown();
+    }
+  }, 350);
+}
+function commit(){ saveLocal(); pushRemote(); render(); }
+
+function setConn(cls,txt){
+  const el=$("conn"); el.className="status "+cls;
+  el.querySelector("span").textContent=txt;
+}
+
+/* ================= firebase ================= */
+let fbSet, fbGet;
+async function initFirebase(){
+  if(!FIREBASE_CONFIG){
+    $("setupBanner").style.display="";
+    setConn("local","Local only");
+    state = loadLocal() || blank();
+    if(!state.tasks.length && !state.members.length) askSeed();
+    canEdit = true; applyPerms(); render();
+    return;
+  }
+  try{
+    const [{initializeApp},{getDatabase,ref,onValue,set,get}] = await Promise.all([
+      import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),
+      import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js")
+    ]);
+    const app = initializeApp(FIREBASE_CONFIG);
+    db = getDatabase(app);
+    boardRef = ref(db, `boards/${BOARD_ID}`);
+    dataRef  = ref(db, `boards/${BOARD_ID}/data`);
+    fbSet = set; fbGet = get;
+    online = true;
+
+    onValue(dataRef, snap=>{
+      const v = snap.val();
+      if(v){
+        v.members = v.members || []; v.tasks = v.tasks || [];
+        if(suppressRender){ pendingRemote = v; }
+        else { state = v; saveLocal(); render(); }
+        setConn("live","Live · synced");
+      }else{
+        setConn("live","Live · empty board");
+        state = blank(); render();
+        if(canEdit) askSeed();
+      }
+    }, err=>{
+      console.warn(err); online=false;
+      setConn("off","Offline — check database rules");
+      state = loadLocal() || blank(); render();
+    });
+
+    // restore officer session
+    const saved = localStorage.getItem(PKEY);
+    if(saved!==null){ pass = saved; canEdit = true; }
+    applyPerms();
+  }catch(err){
+    console.warn(err);
+    setConn("off","Couldn't reach Firebase");
+    state = loadLocal() || blank();
+    canEdit = false; applyPerms(); render();
+  }
+}
+
+/* ================= permissions ================= */
+function applyPerms(){
+  document.body.classList.toggle("can-edit", canEdit);
+  $("fcName").disabled = !canEdit;
+  $("lockBtn").textContent = canEdit ? "Officer mode ✓" : "Officer login";
+  $("lockBtn").classList.toggle("gold", canEdit);
+  $("hint").innerHTML = canEdit
+    ? `<b>Officer mode.</b> Drag cards between columns to change whatever you grouped by — status, member, or category. Click a card to edit it.<br>
+       Changes save to the shared board and appear for everyone instantly. Last edit wins, so avoid two officers editing the same card at once.`
+    : `<b>View only.</b> You're seeing the FC's live board — it updates on its own as officers make changes.<br>
+       Need to edit? Ask an officer for the password, then hit <b>Officer login</b>.`;
+}
+function lockDown(){ canEdit=false; pass=null; localStorage.removeItem(PKEY); applyPerms(); render(); }
+
+$("lockBtn").onclick = ()=>{
+  if(canEdit){
+    if(confirm("Leave officer mode? You'll go back to view-only.")) lockDown();
+    return;
+  }
+  $("pPass").value=""; $("pErr").textContent=""; $("pdlg").showModal();
+  setTimeout(()=>$("pPass").focus(),50);
+};
+$("pCancel").onclick = ()=> $("pdlg").close();
+$("pOk").onclick = async ()=>{
+  const v = $("pPass").value;
+  if(!online){ // local mode: nothing to verify against
+    pass=v; canEdit=true; localStorage.setItem(PKEY,v); $("pdlg").close(); applyPerms(); render(); return;
+  }
+  $("pErr").textContent="Checking…";
+  try{
+    // A write is the test: the database rule rejects a wrong key.
+    await fbSet(boardRef, { key:v, data: JSON.parse(JSON.stringify(state)), updated: Date.now() });
+    pass=v; canEdit=true; localStorage.setItem(PKEY,v);
+    $("pdlg").close(); applyPerms(); render();
+    setConn("live","Live · synced");
+  }catch(err){
+    $("pErr").textContent = "Wrong password.";
+  }
+};
+$("pPass").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); $("pOk").click(); } });
+
+/* ================= seeding an empty board ================= */
+let seedAsked=false;
+function askSeed(){
+  if(seedAsked) return; seedAsked=true;
+  setTimeout(()=>{ try{ $("sdlg").showModal(); }catch(e){} }, 400);
+}
+$("sSample").onclick = ()=>{ state = sample(); $("sdlg").close(); commit(); };
+$("sBlank").onclick  = ()=>{ state = blank();  $("sdlg").close(); commit(); };
+
+/* ================= view switching ================= */
+let view = "board";
+function setView(v){
+  view=v;
+  $("tabBoard").classList.toggle("on", v==="board");
+  $("tabGantt").classList.toggle("on", v==="gantt");
+  $("viewBoard").style.display = v==="board"?"":"none";
+  $("viewGantt").style.display = v==="gantt"?"":"none";
+  $("boardBar").style.display  = v==="board"?"":"none";
+  $("ganttBar").style.display  = v==="gantt"?"":"none";
+  render();
+}
+$("tabBoard").onclick = ()=> setView("board");
+$("tabGantt").onclick = ()=> setView("gantt");
+
+/* ================= shared UI ================= */
+function renderLegend(){
+  $("legend").innerHTML = CATS.map(c=>`<span><i class="dot" style="background:${c.color}"></i>${c.name}</span>`).join("");
+}
+function renderRoster(){
+  $("roster").innerHTML = state.members.map(m=>`
+    <span class="mchip">
+      <i class="av" style="background:${m.color}">${initials(m.name)}</i>
+      ${esc(m.name)}${m.role?` <i style="color:var(--muted);font-style:normal">· ${esc(m.role)}</i>`:""}
+      ${canEdit?`<button data-rm="${m.id}" title="Remove">×</button>`:""}
+    </span>`).join("")
+    || `<span style="color:var(--muted);font-size:12px">No members on the roster yet${canEdit?` — click “+ Member”.`:`.`}</span>`;
+}
+$("roster").onclick = e=>{
+  const b=e.target.closest("[data-rm]"); if(!b||!canEdit) return;
+  const m=memOf(b.dataset.rm); if(!m) return;
+  if(confirm(`Remove ${m.name} from the roster? Their tasks become unassigned.`)){
+    state.members = state.members.filter(x=>x.id!==m.id);
+    state.tasks.forEach(t=>{ if(t.owner===m.id) t.owner=""; });
+    commit();
+  }
+};
+function fillSelects(){
+  $("fOwner").innerHTML = `<option value="">Unassigned</option>` +
+    state.members.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join("");
+  $("fCat").innerHTML    = CATS.map(c=>`<option value="${c.id}">${c.name}</option>`).join("");
+  $("fStatus").innerHTML = STATUSES.map(s=>`<option value="${s.id}">${s.name}</option>`).join("");
+  const fo=$("filtOwner").value, fc=$("filtCat").value;
+  $("filtOwner").innerHTML = `<option value="">All members</option><option value="__none">Unassigned</option>` +
+    state.members.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join("");
+  $("filtCat").innerHTML = `<option value="">All categories</option>` +
+    CATS.map(c=>`<option value="${c.id}">${c.name}</option>`).join("");
+  $("filtOwner").value = fo||""; $("filtCat").value = fc||"";
+}
+function visibleTasks(){
+  const fo=$("filtOwner").value, fc=$("filtCat").value;
+  return state.tasks.filter(t=>{
+    if(fo==="__none" && t.owner) return false;
+    if(fo && fo!=="__none" && t.owner!==fo) return false;
+    if(fc && t.cat!==fc) return false;
+    return true;
+  });
+}
+
+/* ================= board ================= */
+function columnsFor(g){
+  if(g==="status") return STATUSES.map(s=>({key:s.id,label:s.name,color:s.color}));
+  if(g==="cat")    return CATS.map(c=>({key:c.id,label:c.name,color:c.color}));
+  return [...state.members.map(m=>({key:m.id,label:m.name,color:m.color})),
+          {key:"",label:"Unassigned",color:"#5a6379"}];
+}
+function cardHTML(t){
+  const c=catOf(t.cat), m=memOf(t.owner), s=statOf(t.status);
+  const due = t.mile ? t.start : t.end;
+  const late = due < today() && t.status!=="done";
+  return `<div class="card" ${canEdit?'draggable="true"':""} data-id="${t.id}" style="border-left-color:${c.color}">
+    <div class="cname">${t.mile?"◆ ":""}${esc(t.name)}</div>
+    <div class="meta">
+      <span class="chip"><i class="dot" style="background:${c.color}"></i>${c.name}</span>
+      ${m?`<span class="chip"><i class="av" style="background:${m.color}">${initials(m.name)}</i>${esc(m.name)}</span>`
+         :`<span class="chip" style="opacity:.6">unassigned</span>`}
+      <span class="chip"${late?' style="color:#ff8a8a"':""}>${due}</span>
+      <span class="chip" style="color:${s.color}">${s.name}</span>
+    </div>
+    ${t.pct>0?`<div class="pbar"><i style="width:${t.pct}%;background:${c.color}"></i></div>`:""}
+  </div>`;
+}
+function renderBoard(){
+  const g=$("groupBy").value, cols=columnsFor(g), tasks=visibleTasks();
+  $("board").innerHTML = cols.map(col=>{
+    const list = tasks.filter(t => (g==="status"?t.status : g==="cat"?t.cat : (t.owner||"")) === col.key);
+    return `<div class="col" data-key="${col.key}">
+      <div class="colhead">
+        <span class="ttl"><i class="dot" style="background:${col.color}"></i>${esc(col.label)}</span>
+        <span class="count">${list.length}</span></div>
+      <div class="cards" data-key="${col.key}">${list.map(cardHTML).join("")}</div>
+      ${canEdit?`<button class="addcard" data-add="${col.key}">+ add task here</button>`:""}
+    </div>`;
+  }).join("");
+}
+
+/* drag & drop */
+let dragId=null;
+document.addEventListener("dragstart", e=>{
+  if(!canEdit) return;
+  const c=e.target.closest(".card"); if(!c) return;
+  dragId=c.dataset.id; suppressRender=true; c.classList.add("dragging");
+  e.dataTransfer.effectAllowed="move";
+  try{ e.dataTransfer.setData("text/plain",dragId); }catch(_){}
+});
+document.addEventListener("dragend", ()=>{
+  document.querySelectorAll(".dragging").forEach(n=>n.classList.remove("dragging"));
+  document.querySelectorAll(".col.over").forEach(n=>n.classList.remove("over"));
+  dragId=null; suppressRender=false; flushRemote();
+});
+document.addEventListener("dragover", e=>{
+  const z=e.target.closest(".cards"); if(!z||!dragId) return;
+  e.preventDefault(); e.dataTransfer.dropEffect="move";
+  document.querySelectorAll(".col.over").forEach(n=>n.classList.remove("over"));
+  z.closest(".col").classList.add("over");
+});
+document.addEventListener("drop", e=>{
+  const z=e.target.closest(".cards"); if(!z||!dragId||!canEdit) return;
+  e.preventDefault();
+  const t=state.tasks.find(x=>x.id===dragId); if(!t) return;
+  const g=$("groupBy").value, key=z.dataset.key;
+  if(g==="status"){ t.status=key; if(key==="done") t.pct=100; if(key==="backlog"&&t.pct===100) t.pct=0; }
+  else if(g==="cat"){ t.cat=key; } else { t.owner=key; }
+
+  const after=[...z.querySelectorAll(".card:not(.dragging)")].find(el=>{
+    const r=el.getBoundingClientRect(); return e.clientY < r.top + r.height/2;
+  });
+  state.tasks = state.tasks.filter(x=>x.id!==t.id);
+  if(after){ const i=state.tasks.findIndex(x=>x.id===after.dataset.id);
+    state.tasks.splice(i<0?state.tasks.length:i,0,t); }
+  else state.tasks.push(t);
+  dragId=null; suppressRender=false;
+  commit();
+});
+function flushRemote(){
+  if(pendingRemote && !suppressRender){ state=pendingRemote; pendingRemote=null; saveLocal(); render(); }
+}
+
+/* ================= gantt ================= */
+function bounds(list){
+  if(!list.length){ const t=today(); return [addDays(t,-7),addDays(t,30)]; }
+  let min=list[0].start, max=list[0].end;
+  list.forEach(t=>{ if(t.start<min)min=t.start; if(t.end>max)max=t.end; });
+  return [addDays(min,-3), addDays(max,3)];
+}
+function renderGantt(){
+  const zoom=$("zoom").value, grp=$("ganttGroup").value, tasks=visibleTasks();
+  const [lo,hi]=bounds(tasks);
+  const days=[]; for(let d=lo; d<=hi; d=addDays(d,1)) days.push(d);
+  const cols = zoom==="day" ? days
+    : zoom==="week" ? days.filter((d,i)=> new Date(d+"T00:00:00").getDay()===1 || i===0)
+    : days.filter(d=> d.slice(-2)==="01");
+  const cw = zoom==="day"?30 : zoom==="week"?48 : 74;
+  const idx={}; days.forEach((d,i)=>idx[d]=i);
+  const ppd=(cols.length*cw)/days.length;
+  const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+  const hdr = cols.map(d=>{
+    const dt=new Date(d+"T00:00:00");
+    const lbl = zoom==="day" ? `${dt.getDate()}<br><small style="opacity:.55">${MON[dt.getMonth()]}</small>`
+      : zoom==="week" ? `${MON[dt.getMonth()]} ${dt.getDate()}`
+      : `${MON[dt.getMonth()]} '${String(dt.getFullYear()).slice(2)}`;
+    return `<th style="min-width:${cw}px">${lbl}</th>`;
+  }).join("");
+
+  const groups = grp==="cat"
+    ? CATS.map(c=>({key:c.id,label:c.name,color:c.color}))
+    : [...state.members.map(m=>({key:m.id,label:m.name,color:m.color})),{key:"",label:"Unassigned",color:"#5a6379"}];
+
+  let rows="";
+  groups.forEach(g=>{
+    const list=tasks.filter(t => (grp==="cat"?t.cat:(t.owner||""))===g.key)
+      .sort((a,b)=> a.start<b.start?-1:a.start>b.start?1:0);
+    if(!list.length) return;
+    rows += `<tr class="grouprow"><td class="namecol" style="color:${g.color}">${esc(g.label)}</td>
+      <td class="gridcell" colspan="${cols.length}"></td></tr>`;
+    list.forEach(t=>{
+      const c=catOf(t.cat), m=memOf(t.owner);
+      const s=idx[t.start]??0, e=idx[t.end]??s;
+      const left=s*ppd, w=Math.max(ppd*(e-s+1),16);
+      const bar = t.mile
+        ? `<div class="milestone" data-id="${t.id}" title="${esc(t.name)} — ${t.start}"
+             style="left:${left+ppd/2-9}px;background:${c.color}"></div>`
+        : `<div class="bar" data-id="${t.id}" title="${esc(t.name)} — ${t.start} → ${t.end}"
+             style="left:${left}px;width:${w}px;background:${c.color}">
+             <div class="fill" style="width:${t.pct}%"></div>
+             <span>${t.pct?t.pct+"% ":""}${esc(t.name)}</span></div>`;
+      rows += `<tr>
+        <td class="namecol"><div class="tname">
+          <span style="flex:1">${t.mile?"◆ ":""}${esc(t.name)}
+            ${m?`<i class="av" style="background:${m.color};display:inline-grid;vertical-align:middle;margin-left:4px">${initials(m.name)}</i>`:""}</span>
+          ${canEdit?`<span class="rowtools">
+            <button data-edit="${t.id}">edit</button>
+            <button class="danger" data-del="${t.id}">×</button></span>`:""}
+        </div></td>
+        <td class="gridcell" colspan="${cols.length}">${bar}</td></tr>`;
+    });
+  });
+  if(!rows) rows = `<tr><td class="namecol"></td><td class="gridcell" colspan="${cols.length}">
+    <div class="empty">Nothing to show here yet.</div></td></tr>`;
+
+  const ti=idx[today()];
+  const line = ti!==undefined ? `<div class="todayline" style="left:${290+ti*ppd+ppd/2}px"></div>` : "";
+  $("chart").innerHTML = `<div style="position:relative">${line}
+    <table><thead><tr><th class="namecol">Task</th>${hdr}</tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+/* ================= render ================= */
+function render(){
+  if(suppressRender) return;
+  $("fcName").value = state.name || "Free Company Roadmap";
+  fillSelects(); renderRoster(); renderLegend();
+  if(view==="board") renderBoard(); else renderGantt();
+}
+
+/* ================= task dialog ================= */
+let editing=null;
+$("fPct").oninput = e => $("pctLbl").textContent = e.target.value+"%";
+function openDlg(t, preset){
+  if(!canEdit) return;
+  editing=t; suppressRender=true; fillSelects();
+  $("dlgTitle").textContent = t?"Edit task":"New task";
+  $("fName").value   = t?t.name:"";
+  $("fCat").value    = t?t.cat:(preset&&preset.g==="cat"?preset.key:CATS[0].id);
+  $("fOwner").value  = t?t.owner:(preset&&preset.g==="owner"?preset.key:"");
+  $("fStatus").value = t?t.status:(preset&&preset.g==="status"?preset.key:"backlog");
+  $("fStart").value  = t?t.start:today();
+  $("fEnd").value    = t?t.end:addDays(today(),7);
+  $("fPct").value    = t?t.pct:0;
+  $("pctLbl").textContent=(t?t.pct:0)+"%";
+  $("fMile").checked = t?!!t.mile:false;
+  $("delBtn").style.display = t?"":"none";
+  $("dlg").showModal(); setTimeout(()=>$("fName").focus(),50);
+}
+function closeDlg(){ $("dlg").close(); suppressRender=false; flushRemote(); }
+$("saveBtn").onclick = ()=>{
+  const name=$("fName").value.trim(); if(!name){ $("fName").focus(); return; }
+  let s=$("fStart").value, e=$("fEnd").value;
+  if($("fMile").checked) e=s;
+  if(e<s) [s,e]=[e,s];
+  const d={name,cat:$("fCat").value,owner:$("fOwner").value,status:$("fStatus").value,
+    start:s,end:e,pct:+$("fPct").value,mile:$("fMile").checked};
+  if(d.status==="done") d.pct=100;
+  if(editing) Object.assign(editing,d); else state.tasks.push({id:uid(),...d});
+  closeDlg(); commit();
+};
+$("delBtn").onclick = ()=>{
+  if(editing && confirm(`Delete “${editing.name}”?`)) state.tasks=state.tasks.filter(x=>x.id!==editing.id);
+  closeDlg(); commit();
+};
+$("cancelBtn").onclick = closeDlg;
+
+document.addEventListener("click", e=>{
+  const add=e.target.closest("[data-add]");
+  if(add){ openDlg(null,{g:$("groupBy").value,key:add.dataset.add}); return; }
+  const del=e.target.closest("[data-del]");
+  if(del && canEdit){
+    const t=state.tasks.find(x=>x.id===del.dataset.del);
+    if(t && confirm(`Delete “${t.name}”?`)){ state.tasks=state.tasks.filter(x=>x.id!==t.id); commit(); }
+    return;
+  }
+  const ed=e.target.closest("[data-edit]");
+  if(ed){ openDlg(state.tasks.find(x=>x.id===ed.dataset.edit)); return; }
+  const el=e.target.closest(".card,[data-id]");
+  if(el && el.dataset.id) openDlg(state.tasks.find(x=>x.id===el.dataset.id));
+});
+
+/* ================= member dialog ================= */
+$("memBtn").onclick = ()=>{
+  if(!canEdit) return;
+  $("mName").value=""; $("mRole").value=""; suppressRender=true;
+  $("mdlg").showModal(); setTimeout(()=>$("mName").focus(),50);
+};
+$("mCancel").onclick = ()=>{ $("mdlg").close(); suppressRender=false; flushRemote(); };
+$("mSave").onclick = ()=>{
+  const n=$("mName").value.trim(); if(!n){ $("mName").focus(); return; }
+  state.members.push({id:uid(),name:n,role:$("mRole").value,
+    color:AVCOLORS[state.members.length % AVCOLORS.length]});
+  $("mdlg").close(); suppressRender=false; commit();
+};
+
+/* ================= toolbar ================= */
+$("addBtn").onclick      = ()=> openDlg(null);
+$("groupBy").onchange    = render;
+$("filtOwner").onchange  = render;
+$("filtCat").onchange    = render;
+$("zoom").onchange       = render;
+$("ganttGroup").onchange = render;
+$("printBtn").onclick    = ()=> window.print();
+$("fcName").oninput      = e=>{ if(canEdit){ state.name=e.target.value; saveLocal(); pushRemote(); } };
+$("exportBtn").onclick   = ()=>{
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=(state.name||"fc-roadmap").replace(/\W+/g,"-").toLowerCase()+"-"+today()+".json";
+  a.click();
+};
+$("importBtn").onclick = ()=>{ if(canEdit) $("fileIn").click(); };
+$("fileIn").onchange = e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const d=JSON.parse(r.result);
+      if(!d.tasks||!d.members) return alert("That file doesn't look like an FC roadmap export.");
+      if(!confirm(`Replace the shared board with “${d.name||"imported board"}” (${d.tasks.length} tasks)?\n\nThis overwrites what everyone else sees.`)) return;
+      state=d; commit();
+    }catch(err){ alert("Couldn't read that file."); }
+  };
+  r.readAsText(f); e.target.value="";
+};
+
+applyPerms();
+initFirebase();
+</script>
+</body>
+</html>
